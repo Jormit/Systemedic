@@ -16,3 +16,8 @@
 #define WIFI_SSID      "Optus_53C974"
 #define WIFI_PASS      "burettawnyMgLUk"
 #define MAXIMUM_RETRY  5
+
+// Database Setup
+#define DB_URL         "us-east-1-1.aws.cloud2.influxdata.com"
+#define API_WRITE_PATH "/api/v2/write"
+#define QUERY          "org=jormit2000@gmail.com&bucket=Data"

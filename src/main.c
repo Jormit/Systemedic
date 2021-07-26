@@ -3,6 +3,7 @@
 #include "timer.h"
 #include "config.h"
 #include "connect.h"
+#include "http_server.h"
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -16,6 +17,8 @@ void app_main()
     struct max30102_data *pulse_data = max30102_init();
     timer_setup(0,0);
     timer_restart(0,0);
+
+    xTaskCreate(&http_main_loop, "http_main_loop", 8192, pulse_data, 5, NULL);
 
     while (1) {
         max30102_begin_temp(); 

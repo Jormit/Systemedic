@@ -29,10 +29,10 @@ struct max30102_data {
     double ir_normalised;    
     double prev_ir_normalised;
     int bpm_width_count;
+    int heart_beat_count;
 
     // Useful Data
-    double temp;
-    int heart_beat_count;
+    double temp;    
     double Sp02;
     int BPM;
     
