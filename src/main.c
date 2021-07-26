@@ -2,6 +2,7 @@
 #include "circular_buf.h"
 #include "timer.h"
 #include "config.h"
+#include "connect.h"
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -11,6 +12,7 @@
 
 void app_main() 
 {
+    connect_wifi();
     struct max30102_data *pulse_data = max30102_init();
     timer_setup(0,0);
     timer_restart(0,0);
