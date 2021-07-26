@@ -21,6 +21,7 @@ int valid_data(struct max30102_data *pulse_data);
 struct max30102_data {
     // Backend Processing Data.
     struct circular_buf *delay_buf;
+    struct circular_buf *bpm_buf;
     uint32_t red_avg;
     uint32_t red_filtered;
     uint32_t ir_avg;

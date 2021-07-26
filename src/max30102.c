@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include "max30102.h"
 #include "circular_buf.h"
+#include "timer.h"
 
 struct max30102_data *max30102_init()
 {
@@ -28,6 +29,7 @@ struct max30102_data *max30102_init()
     // Initialise the pulse data struct necessary for processing samples later on.
     struct max30102_data *pulse_data = malloc(sizeof(struct max30102_data));
     pulse_data->delay_buf = circular_buf_init(AVG_WINDOW_SIZE * 2);
+    pulse_data->bpm_buf = circular_buf_init(BPM_WINDOW_SIZE);
     pulse_data->ir_avg = 0;
     pulse_data->red_avg = 0;    
     pulse_data->red_filtered = 0;
@@ -40,6 +42,9 @@ struct max30102_data *max30102_init()
     pulse_data->heart_beat_count = 0;
     pulse_data->Sp02 = 0;
     pulse_data->BPM = 0;
+
+    // Initialise timer for BPM Calculations.
+    timer_setup(0,1);    
 
     return pulse_data;
 }
@@ -88,7 +93,7 @@ void max30102_read_samples(struct max30102_data *pulse_data)
         pulse_data->ir_normalised = ((double)pulse_data->ir_filtered / (double)(pulse_data->ir_avg) - 1.0f) * 1000000.0f;
 
         // Find difference between current and previous sample.
-        int diff = (pulse_data->ir_normalised - pulse_data->prev_ir_normalised) > 0;
+        int diff = (pulse_data->ir_normalised - pulse_data->prev_ir_normalised) < 0;
 
         // Use difference to calculate wether a peak has been reached. 
         if (diff && valid_data(pulse_data)) 
@@ -99,13 +104,21 @@ void max30102_read_samples(struct max30102_data *pulse_data)
         {
             if (pulse_data->bpm_width_count > MIN_EDGE_SIZE) 
             {
-                pulse_data->heart_beat_count++;
+                uint32_t BPM = (uint32_t)(1.0f/timer_get_seconds(0,1) * 60.0f); 
+                if (BPM < 300) 
+                {
+                    circular_buf_push(pulse_data->bpm_buf, BPM);
+                    pulse_data->BPM += BPM / BPM_WINDOW_SIZE;
+                    pulse_data->BPM -= circular_buf_return_nth(pulse_data->bpm_buf, BPM_WINDOW_SIZE) / BPM_WINDOW_SIZE;
+                }
+                
                 double r = pulse_data->red_normalised / pulse_data->ir_normalised;
                 double prelim_Sp02 = (-45.06f*r + 30.354f)*r + 94.845f;
                 if (prelim_Sp02 < 100.0f && prelim_Sp02 > 50.0f) 
                 {
                     pulse_data->Sp02 = prelim_Sp02;
-                }                
+                }  
+                timer_restart(0,1);              
             }            
             pulse_data->bpm_width_count = 0;
         }       
