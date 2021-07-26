@@ -1,9 +1,7 @@
 #include <stdint.h>
+#include "config.h"
 
 #define MAX30102_ADDR 0x57
-#define AVG_WINDOW_SIZE 10
-#define FIL_WINDOW_SIZE 5
-#define MIN_EDGE_SIZE 5
 
 struct max30102_data *max30102_init();
 

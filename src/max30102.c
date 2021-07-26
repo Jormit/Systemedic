@@ -25,6 +25,7 @@ struct max30102_data *max30102_init()
     data = 0xa0;                
     i2c_write(MAX30102_ADDR, 0x0d, data);
 
+    // Initialise the pulse data struct necessary for processing samples later on.
     struct max30102_data *pulse_data = malloc(sizeof(struct max30102_data));
     pulse_data->delay_buf = circular_buf_init(AVG_WINDOW_SIZE * 2);
     pulse_data->ir_avg = 0;
