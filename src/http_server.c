@@ -23,7 +23,8 @@
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 static const char *TAG = "HTTP_CLIENT";
 
-extern const char *howsmyssl_com_root_cert_pem = SSL_ROOT_CERT;
+const char *howsmyssl_com_root_cert_pem = SSL_ROOT_CERT;
+extern int emergency;
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
@@ -108,20 +109,22 @@ void http_main_loop(void *pvParameters)
     while (1) {
         sprintf(post_data, "data,host=host1 BPM=%d\n"
                            "data,host=host1 SP02=%f\n"
-                           "data,host=host1 TEMP=%f", 
-                            pulse_data->BPM, pulse_data->Sp02, pulse_data->temp);
+                           "data,host=host1 TEMP=%f\n"
+                           "data,host=host1 EMERGENCY=%d", 
+                            pulse_data->BPM, pulse_data->Sp02, pulse_data->temp, emergency);
 
         esp_http_client_set_method(client, HTTP_METHOD_POST);
         esp_http_client_set_header(client, "Authorization", "Token HSsa1xoxHFjMHTXmr_l0zh5Coa-KZHwmnl6UcvJO3gO4_w93QovneuRQYe2HHV1o238yEXQW5jQ71j8Z_rv8bA==");
         esp_http_client_set_post_field(client, post_data, strlen(post_data));
         esp_err_t err = esp_http_client_perform(client);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-        } else {
+        if (err == ESP_OK) 
+        {
+            //emergency = 0;           
+        } 
+        else 
+        {
             ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-        }
+        }       
     }  
     esp_http_client_cleanup(client);
 }
